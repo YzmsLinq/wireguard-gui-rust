@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories=Network;Web;Internet;
+Comment=WireGuard client (Rust)
+Exec=/usr/local/bin/wgp-run
+Icon=wgp
+Name=wgp
+StartupNotify=true
+Terminal=false
+Type=Application
+Version=1.6

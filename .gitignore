@@ -1,0 +1,7 @@
+/target
+/build.log
+/fetch.log
+/run.log
+/.test-configs
+/*.png
+/*.jpg
