@@ -61,7 +61,7 @@ pub fn code_view(ui: &mut egui::Ui, text: &mut ReadOnlyText, rows: usize) {
 pub fn dim_background(ctx: &egui::Context) {
     let screen = ctx.screen_rect();
 
-    egui::Area::new(egui::Id::new("wgp_modal_dim"))
+    egui::Area::new(egui::Id::new("wgr_modal_dim"))
         .order(egui::Order::Foreground)
         .fixed_pos(screen.min)
         .show(ctx, |ui| {

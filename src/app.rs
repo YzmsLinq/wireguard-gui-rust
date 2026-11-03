@@ -412,7 +412,7 @@ impl WgpApp {
     // ------------------------------------------------------------------ ui
 
     fn top_bar(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::top("wgp_tabs")
+        egui::TopBottomPanel::top("wgr_tabs")
             .frame(
                 egui::Frame::side_top_panel(&ctx.style())
                     .inner_margin(egui::Margin::symmetric(10.0, 6.0)),
@@ -434,7 +434,7 @@ impl WgpApp {
     }
 
     fn status_bar(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::bottom("wgp_status").show(ctx, |ui| {
+        egui::TopBottomPanel::bottom("wgr_status").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.label(RichText::new(VERSION).small().weak());
 
@@ -471,13 +471,13 @@ impl WgpApp {
     }
 
     fn interfaces_panel(&mut self, ctx: &egui::Context) {
-        egui::SidePanel::left("wgp_interfaces")
+        egui::SidePanel::left("wgr_interfaces")
             .resizable(true)
             .default_width(430.0)
             .min_width(300.0)
             .show(ctx, |ui| {
                 egui::ScrollArea::vertical()
-                    .id_salt("wgp_interfaces_list")
+                    .id_salt("wgr_interfaces_list")
                     .auto_shrink([false, false])
                     .show(ui, |ui| self.interface_list(ui));
             });
@@ -485,7 +485,7 @@ impl WgpApp {
 
     /// The toolbar, above the status bar.
     fn toolbar_panel(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::bottom("wgp_toolbar")
+        egui::TopBottomPanel::bottom("wgr_toolbar")
             .frame(
                 egui::Frame::side_top_panel(&ctx.style())
                     .inner_margin(egui::Margin::symmetric(8.0, 4.0)),
@@ -627,7 +627,7 @@ impl WgpApp {
 
         widgets::group_box(ui, &interface_title, interface_height, |ui| {
             egui::ScrollArea::vertical()
-                .id_salt("wgp_interface_view")
+                .id_salt("wgr_interface_view")
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
                     widgets::code_view(ui, &mut self.interface_text, 6);
@@ -641,7 +641,7 @@ impl WgpApp {
 
         widgets::group_box(ui, &title, peers_height, |ui| {
             egui::ScrollArea::vertical()
-                .id_salt("wgp_peers_view")
+                .id_salt("wgr_peers_view")
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
                     widgets::code_view(ui, &mut self.peers_text, 10);
@@ -651,7 +651,7 @@ impl WgpApp {
 
     fn logs_panel(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::vertical()
-            .id_salt("wgp_logs_view")
+            .id_salt("wgr_logs_view")
             .auto_shrink([false, false])
             .stick_to_bottom(true)
             .show(ui, |ui| {
@@ -679,7 +679,7 @@ impl WgpApp {
             egui::Align2::LEFT_TOP
         };
 
-        let area = egui::Area::new(egui::Id::new("wgp_options_menu"))
+        let area = egui::Area::new(egui::Id::new("wgr_options_menu"))
             .order(egui::Order::Foreground)
             .anchor(anchor, self.menu_offset)
             .show(ctx, |ui| {
@@ -771,7 +771,7 @@ impl WgpApp {
                 widgets::dim_background(ctx);
 
                 egui::Window::new(t(title, self.lang))
-                    .id(egui::Id::new("wgp_message"))
+                    .id(egui::Id::new("wgr_message"))
                     .order(egui::Order::Foreground)
                     .collapsible(false)
                     .resizable(false)
@@ -802,7 +802,7 @@ impl WgpApp {
                 widgets::dim_background(ctx);
 
                 egui::Window::new(t(title, self.lang))
-                    .id(egui::Id::new("wgp_confirm"))
+                    .id(egui::Id::new("wgr_confirm"))
                     .order(egui::Order::Foreground)
                     .collapsible(false)
                     .resizable(false)
@@ -962,14 +962,22 @@ fn tool_button(
     ui.add_enabled(enabled, button)
 }
 
-/// The window displayed when the application is not started as root.
+/// The window displayed when the application could not get root privileges.
 pub struct PrivilegeErrorApp {
     lang: Lang,
+    detail: String,
+    /// The command the user can run in a terminal instead.
+    command: Option<String>,
 }
 
 impl PrivilegeErrorApp {
-    pub fn new(lang: Lang) -> Self {
-        Self { lang }
+    pub fn new(lang: Lang, detail: String) -> Self {
+        Self {
+            lang,
+            detail,
+            command: crate::privilege::self_path()
+                .map(|path| format!("sudo {}", shell_quote(&path.display().to_string()))),
+        }
     }
 }
 
@@ -977,16 +985,66 @@ impl eframe::App for PrivilegeErrorApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical_centered(|ui| {
-                ui.add_space(40.0);
+                ui.add_space(32.0);
                 ui.heading(t(Msg::RootRequired, self.lang));
                 ui.add_space(8.0);
-                ui.label(t(Msg::RootRequiredDetail, self.lang));
-                ui.add_space(20.0);
+                ui.label(&self.detail);
+                ui.add_space(16.0);
 
-                if ui.button(t(Msg::Close, self.lang)).clicked() {
-                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                if let Some(command) = &self.command {
+                    ui.label(t(Msg::RootRequiredManual, self.lang));
+                    ui.add_space(4.0);
+
+                    let mut text = command.as_str();
+                    ui.add(
+                        egui::TextEdit::singleline(&mut text)
+                            .desired_width(420.0)
+                            .interactive(false),
+                    );
+
+                    ui.add_space(4.0);
+
+                    if ui.button(t(Msg::Copy, self.lang)).clicked() {
+                        ctx.copy_text(command.clone());
+                    }
                 }
+
+                ui.add_space(20.0);
+                ui.horizontal(|ui| {
+                    // A new process can only be started from the terminal of
+                    // the user, or by starting wgr again from the menu.
+                    if ui.button(t(Msg::Close, self.lang)).clicked() {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                });
             });
         });
     }
+}
+
+/// `path` quoted for a POSIX shell, when it needs to be.
+fn shell_quote(path: &str) -> String {
+    let safe = !path.is_empty()
+        && path
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || "/._-+:@%".contains(character));
+
+    if safe {
+        path.to_owned()
+    } else {
+        format!("'{}'", path.replace('\'', r"'\''"))
+    }
+}
+
+/// The message shown when the elevation was refused or failed.
+pub fn elevation_failure_message(failure: &crate::privilege::Failure, lang: Lang) -> String {
+    use crate::privilege::Failure;
+
+    let reason = match failure {
+        Failure::NoTool => t(Msg::NoElevationTool, lang),
+        Failure::Cancelled => t(Msg::ElevationCancelled, lang),
+        Failure::Error(message) => message.as_str(),
+    };
+
+    format!("{}\n\n{reason}", t(Msg::RootRequiredDetail, lang))
 }

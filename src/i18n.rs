@@ -2,7 +2,7 @@
 //!
 //! The Rust version keeps the behaviour of the Python one: the language can be
 //! changed at any time from the `Set I/F|Lang.` menu, and the choice is stored
-//! in `~/.config/wireguard-gui-rust/wgp.ini` so it survives a restart.
+//! in `~/.config/wireguard-gui-rust/wgr.ini` so it survives a restart.
 //!
 //! Adding a language only requires adding an entry to [`SUPPORTED_LANGUAGES`],
 //! a [`Lang`] variant and the matching column in the `messages!` table below.
@@ -56,7 +56,7 @@ macro_rules! messages {
 }
 
 messages! {
-    AppTitle => ("wgp", "wgp"),
+    AppTitle => ("wgr", "wgr"),
     // Main window.
     Configs => ("Configs", "配置"),
     Logs => ("Logs", "日志"),
@@ -133,9 +133,22 @@ messages! {
     // Root check.
     RootRequired => ("You need root privileges", "你需要 root 权限"),
     RootRequiredDetail => (
-        "wgp manages /etc/wireguard and the wg-quick services, it has to run as root.",
-        "wgp 需要管理 /etc/wireguard 与 wg-quick 服务，必须以 root 身份运行。"
+        "wgr manages /etc/wireguard and the wg-quick services, it has to run as root.",
+        "wgr 需要管理 /etc/wireguard 与 wg-quick 服务，必须以 root 身份运行。"
     ),
+    RootRequiredManual => (
+        "Start wgr from a terminal with:",
+        "可以在终端中用以下命令启动："
+    ),
+    NoElevationTool => (
+        "Neither pkexec nor sudo is available, wgr cannot ask for the elevation itself.",
+        "系统中没有 pkexec 或 sudo，wgr 无法自行请求提权。"
+    ),
+    ElevationCancelled => (
+        "The elevation was refused or cancelled.",
+        "提权被拒绝或已取消。"
+    ),
+    Copy => ("Copy", "复制"),
     Close => ("Close", "关闭"),
     // Fonts.
     MissingCjkFont => (

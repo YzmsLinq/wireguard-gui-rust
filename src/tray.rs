@@ -73,11 +73,11 @@ impl WgTray {
 
 impl Tray for WgTray {
     fn id(&self) -> String {
-        "wgp".to_owned()
+        "wgr".to_owned()
     }
 
     fn title(&self) -> String {
-        "wgp".to_owned()
+        "wgr".to_owned()
     }
 
     fn icon_pixmap(&self) -> Vec<Icon> {
@@ -102,7 +102,7 @@ impl Tray for WgTray {
                     ),
                 )
             })
-            .unwrap_or_else(|_| ("wgp".to_owned(), String::new()));
+            .unwrap_or_else(|_| ("wgr".to_owned(), String::new()));
 
         ksni::ToolTip {
             icon_name: String::new(),
@@ -192,7 +192,7 @@ impl TrayBridge {
         let flag = failed.clone();
 
         std::thread::Builder::new()
-            .name("wgp-tray".to_owned())
+            .name("wgr-tray".to_owned())
             .spawn(move || {
                 if service.run().is_err() {
                     flag.store(true, Ordering::Relaxed);

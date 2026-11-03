@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 /// Directory and file name, inside `~/.config`.
 pub const DIRECTORY: &str = "wireguard-gui-rust";
-pub const FILE: &str = "wgp.ini";
+pub const FILE: &str = "wgr.ini";
 
 /// Path of the settings file, `None` when the home directory is unknown.
 pub fn path() -> Option<PathBuf> {

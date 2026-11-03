@@ -1,9 +1,9 @@
 [Desktop Entry]
 Categories=Network;Web;Internet;
 Comment=WireGuard client (Rust)
-Exec=/usr/local/bin/wgp-run
-Icon=wgp
-Name=wgp
+Exec=/usr/local/bin/wgr
+Icon=wgr
+Name=wgr
 StartupNotify=true
 Terminal=false
 Type=Application

@@ -72,7 +72,7 @@ impl ConfigDialog {
         widgets::dim_background(ctx);
 
         egui::Window::new(t(self.title(), lang))
-            .id(egui::Id::new("wgp_config_dialog"))
+            .id(egui::Id::new("wgr_config_dialog"))
             .order(egui::Order::Foreground)
             .collapsible(false)
             .resizable(true)
@@ -105,7 +105,7 @@ impl ConfigDialog {
                 ui.label(egui::RichText::new(t(Msg::Configuration, lang)).strong());
 
                 let response = egui::ScrollArea::vertical()
-                    .id_salt("wgp_dialog_config_view")
+                    .id_salt("wgr_dialog_config_view")
                     .auto_shrink([false, false])
                     .max_height(260.0)
                     .show(ui, |ui| {

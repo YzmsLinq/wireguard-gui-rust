@@ -1,6 +1,6 @@
 //! A small file picker, drawn with `egui`.
 //!
-//! `wgp` has to work in the minimal sessions where it is usually started
+//! `wgr` has to work in the minimal sessions where it is usually started
 //! (`sudo` from a desktop icon), where no file chooser portal is guaranteed to
 //! be available, so the picker is part of the application.
 
@@ -154,7 +154,7 @@ impl FilePicker {
         crate::widgets::dim_background(ctx);
 
         egui::Window::new(t(title, lang))
-            .id(egui::Id::new("wgp_file_picker"))
+            .id(egui::Id::new("wgr_file_picker"))
             .order(egui::Order::Foreground)
             .collapsible(false)
             .resizable(true)
@@ -188,7 +188,7 @@ impl FilePicker {
                 let mut accept_file = None;
 
                 egui::ScrollArea::vertical()
-                    .id_salt("wgp_file_picker_list")
+                    .id_salt("wgr_file_picker_list")
                     .max_height(300.0)
                     .auto_shrink([false, false])
                     .show(ui, |ui| {

@@ -1,4 +1,4 @@
-# wgp — WireGuard GUI (Rust 版)
+# wgr — WireGuard GUI (Rust 版)
 
 WireGuard 的 Linux 桌面客户端，由 [wireguard-gui-python](https://github.com/gary113/wireguard-gui-python) 移植为 Rust。
 
@@ -19,7 +19,7 @@ WireGuard 的 Linux 桌面客户端，由 [wireguard-gui-python](https://github.
 - 导出全部接口为 zip / 从 zip 导入接口
 - 实时显示 `journalctl -u 'wg-quick@*'` 日志（含最近 200 行历史）
 - 系统托盘图标：点击显示主窗口，菜单中可直接切换每个接口，图标角标显示已连接数量
-- 中英文界面，运行时切换并记忆（`~/.config/wireguard-gui-rust/wgp.ini`）
+- 中英文界面，运行时切换并记忆（`~/.config/wireguard-gui-rust/wgr.ini`）
 - 最小化/关闭到托盘继续运行
 
 ## 系统要求
@@ -34,16 +34,14 @@ WireGuard 的 Linux 桌面客户端，由 [wireguard-gui-python](https://github.
 
 ```bash
 cargo build --release
-sudo ./target/release/wgp
+./target/release/wgr
 ```
 
-或使用启动脚本（通过 pkexec 提权）：
+wgr 需要管理 `/etc/wireguard` 和 `wg-quick` 服务，因此必须以 root 运行：直接以普通用户启动即可，程序会自行提权（无需 `sudo`，也不需要启动脚本）：
 
-```bash
-./run.sh
-```
-
-wgp 需要管理 `/etc/wireguard` 和 `wg-quick` 服务，因此必须以 root 运行。
+- 先检查自身的有效用户 ID（`geteuid`），已经是 root 就直接启动界面；
+- 否则通过 `pkexec`（未安装时退回 `sudo`）以 root 身份重新启动自己，并等它退出——只有这样才能判断这次提权是否成功；`pkexec` 会清空环境变量，因此会把 `DISPLAY`、`XAUTHORITY`、`WAYLAND_DISPLAY`、`XDG_RUNTIME_DIR` 传给新进程；
+- 提权被取消或失败时，会显示一个说明原因的窗口，其中给出可在终端里手动执行的 `sudo <wgr 路径>` 命令。
 
 ## 安装到系统
 
@@ -54,14 +52,16 @@ sudo ./install.sh
 安装脚本会：
 
 1. `cargo build --release` 构建二进制；
-2. 安装 `/usr/local/bin/wgp` 与启动器 `/usr/local/bin/wgp-run`；
-3. 安装图标与 `wgp.desktop`（应用菜单出现 wgp 图标）。
+2. 安装 `/usr/local/bin/wgr`；
+3. 安装图标与 `wgr.desktop`（应用菜单出现 wgr 图标，点击时会弹出提权对话框）；
+4. 删除旧版本（wgp）遗留的启动器 `/usr/local/bin/wgp-run`。
 
 ## 项目结构（与 Python 版的对应关系）
 
 | Python 版 | Rust 版 | 说明 |
 | --- | --- | --- |
 | `wgp.py` | `src/main.rs` | 入口、root 检查 |
+| `run.sh` | `src/privilege.rs` | 提权：检测 root、通过 pkexec/sudo 重新启动自身 |
 | `views/main.py` | `src/app.rs` | 主窗口、托盘交互、工具栏、标签页 |
 | `views/new.py` / `views/edit.py` | `src/dialogs.rs` | 新建/编辑接口对话框（含公钥实时推导） |
 | `utility/functions.py` | `src/wg.rs` | 接口的增删改、启停、导入导出 |
@@ -75,18 +75,19 @@ sudo ./install.sh
 
 ## 与 Python 版的差异
 
+- **提权**：不再依赖 `run.sh`，由程序自身通过 `pkexec`/`sudo` 重新启动自己（见上文「构建与运行」）；
 - **托盘图标**：Qt 的 `QSystemTrayIcon` 换成了 StatusNotifierItem（`ksni`），这是现代 Linux 桌面的托盘协议；
 - **文件选择**：内置了一个简单的文件/目录选择对话框，不依赖 zenity 或 xdg-desktop-portal；
 - **日志**：启动时先读取最近 200 行日志，不必等新日志产生；
 - **翻译**：不再使用 Qt 的 `.ts/.qm` 文件，界面字符串直接写在 `src/i18n.rs` 的对照表中，新增语言只需加一列；
-- **配置文件路径**：语言偏好保存在 `~/.config/wireguard-gui-rust/wgp.ini`（Python 版在 `~/.config/wireguard-gui-python/wgp.ini`），WireGuard 配置文件的位置不变。
+- **配置文件路径**：语言偏好保存在 `~/.config/wireguard-gui-rust/wgr.ini`（Python 版在 `~/.config/wireguard-gui-python/wgp.ini`），WireGuard 配置文件的位置不变。
 
 ## 开发
 
 ```bash
 cargo test            # 单元测试（配置解析、字段读取、翻译完整性等）
 cargo clippy          # 静态检查
-WGP_CONFIGS_DIR=... ./target/debug/wgp   # 用其它目录代替 /etc/wireguard 做测试
+WGP_CONFIGS_DIR=... ./target/debug/wgr   # 用其它目录代替 /etc/wireguard 做测试
 ```
 
 ## 许可
